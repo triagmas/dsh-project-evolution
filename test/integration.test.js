@@ -84,6 +84,16 @@ test('action route records knowledge, proposes a draft, and maps revision confli
   await assert.rejects(() => readFile(join(root, '.dsh', 'skills', 'use-manual-draft', 'SKILL.md')), /ENOENT/)
 })
 
+test('oversized action bodies are rejected with 413 before parsing', async () => {
+  const { service } = await setup()
+  const oversized = await call(service, '/action', {
+    method: 'POST',
+    body: { action: 'record-note', title: 'Large', content: 'x'.repeat(1_000_001) },
+  })
+  assert.equal(oversized.status, 413)
+  assert.equal((await oversized.json()).error.code, 'BODY_TOO_LARGE')
+})
+
 test('bad JSON and unknown skill are explicit errors, not crashes', async () => {
   const { service } = await setup()
   const bad = await call(service, '/action', { method: 'POST', body: '{not json' })

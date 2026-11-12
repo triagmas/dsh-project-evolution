@@ -34,11 +34,43 @@ function errorBody(error, fallbackStatus = 500) {
   }
 }
 
+const MAX_BODY_BYTES = 1_000_000
+
+function bodyTooLarge() {
+  const error = new Error('Request body is too large.')
+  error.code = 'BODY_TOO_LARGE'
+  error.status = 413
+  return error
+}
+
+async function readBoundedBody(request) {
+  const declared = Number(request.headers.get('content-length'))
+  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) throw bodyTooLarge()
+  if (!request.body) return ''
+  const reader = request.body.getReader()
+  const chunks = []
+  let total = 0
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      total += value.byteLength
+      if (total > MAX_BODY_BYTES) {
+        await reader.cancel().catch(() => {})
+        throw bodyTooLarge()
+      }
+      chunks.push(value)
+    }
+  } finally {
+    reader.releaseLock?.()
+  }
+  return new TextDecoder().decode(Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))))
+}
+
 async function bodyOf(request) {
   if (request.method !== 'POST') return {}
-  const text = await request.text()
+  const text = await readBoundedBody(request)
   if (!text.trim()) return {}
-  if (text.length > 1_000_000) throw new Error('Request body is too large.')
   try {
     const parsed = JSON.parse(text)
     return parsed && typeof parsed === 'object' ? parsed : {}
