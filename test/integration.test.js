@@ -94,6 +94,25 @@ test('oversized action bodies are rejected with 413 before parsing', async () =>
   assert.equal((await oversized.json()).error.code, 'BODY_TOO_LARGE')
 })
 
+test('oversized streamed action bodies are rejected without a content-length header', async () => {
+  const { service } = await setup()
+  const body = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array(1_000_001))
+      controller.close()
+    },
+  })
+  const request = new Request('http://127.0.0.1/api/project-evolution/action?sessionId=s1', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body,
+    duplex: 'half',
+  })
+  const response = await route(service, '/action').fetch(request)
+  assert.equal(response.status, 413)
+  assert.equal((await response.json()).error.code, 'BODY_TOO_LARGE')
+})
+
 test('bad JSON and unknown skill are explicit errors, not crashes', async () => {
   const { service } = await setup()
   const bad = await call(service, '/action', { method: 'POST', body: '{not json' })
