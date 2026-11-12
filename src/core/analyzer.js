@@ -46,11 +46,23 @@ function commandOf(args) {
   return normalizeCommand(args.command ?? args.cmd ?? args.script ?? args.input ?? '')
 }
 
+function stripZeroFailureLines(output) {
+  return output.split('\n').map((line) => {
+    const withoutIndent = line.trimStart()
+    const body = withoutIndent.startsWith('#') ? withoutIndent.slice(1).trimStart() : withoutIndent
+    const marker = /^fail(?:ed|ure)?s?\b/i.exec(body)
+    if (!marker) return line
+    const rest = body.slice(marker[0].length).trimStart()
+    const value = rest.startsWith(':') || rest.startsWith('=') ? rest.slice(1).trimStart() : rest
+    return /^0(?:\b|$)/.test(value) ? '' : line
+  }).join('\n')
+}
+
 function classifyTest(command, output, isError) {
   const text = `${command}\n${output}`
   if (!TEST_COMMAND.test(command)) return undefined
   // `node --test` prints "# fail 0"; that is success, not a failure marker.
-  const normalizedOutput = output.replace(/\b(?:fail(?:ed|ure)?|failures?)\s*[:=]?\s*0\b/gi, '')
+  const normalizedOutput = stripZeroFailureLines(output)
   const hasFailure = Boolean(isError) || FAILURE_MARKER.test(normalizedOutput)
   const hasSuccess = !hasFailure && !isError
   return {

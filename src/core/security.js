@@ -131,8 +131,8 @@ export function validateSkillContent(content, expectedName) {
     errors.push('Missing YAML frontmatter delimited by --- lines.')
   } else {
     const block = frontmatter[1]
-    const name = /^name:\s*(.+)$/m.exec(block)?.[1]?.trim().replace(/^["']|["']$/g, '')
-    const description = /^description:\s*(.+)$/m.exec(block)?.[1]?.trim().replace(/^["']|["']$/g, '')
+    const name = /^name:[ \t]*(.*)$/m.exec(block)?.[1]?.trim().replace(/^["']|["']$/g, '')
+    const description = /^description:[ \t]*(.*)$/m.exec(block)?.[1]?.trim().replace(/^["']|["']$/g, '')
     if (!name) errors.push('Frontmatter requires a name.')
     if (!description) errors.push('Frontmatter requires a description.')
     if (name && expectedName && name !== expectedName) {

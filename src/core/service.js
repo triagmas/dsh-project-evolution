@@ -267,7 +267,7 @@ export class EvolutionService {
     if (!additions.length) return generated
     const marker = `## Verified update ${nowIso().slice(0, 10)}`
     const extension = `\n\n${marker}\n\n${additions.join('\n\n')}\n`
-    return `${renderFrontmatter(data)}${parsed.body.replace(/\s*$/, '')}${extension}`
+    return `${renderFrontmatter(data)}${parsed.body.trimEnd()}${extension}`
   }
 
   async analyzeSession(sessionId, { force = true } = {}) {

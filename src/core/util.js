@@ -61,9 +61,7 @@ export function slugify(value, fallback = 'experience') {
   const slug = String(value ?? '')
     .toLowerCase()
     .replace(/[^a-z0-9\u0400-\u04ff]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-{2,}/g, '-')
-  return slug || fallback
+  return slug.split('-').filter(Boolean).join('-') || fallback
 }
 
 export function yamlString(value) {
