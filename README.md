@@ -46,7 +46,7 @@ Manager at the tarball):
 
 ```bash
 npm pack
-dsh plugin --profile <profile> add ./dsh-project-evolution-1.0.0.tgz
+dsh plugin --profile <profile> add ./dsh-project-evolution-1.0.1.tgz
 ```
 
 Enable the **Project Evolution** bundle after installation and reload the Web
@@ -64,8 +64,10 @@ for the public-release security policy and the checks performed on this tree.
 1. Open a session in a project with no project skills.
 2. Run a real task, change a file, and execute a real verification command
    (for example `npm test`) whose output says it passed.
-3. End the turn. Project Evolution records masked evidence and creates a
-   proposal; it does not write the skill.
+3. End the turn. Project Evolution records masked evidence. A turn that
+   changed at least one file, or contains an explicit user correction, creates
+   a reviewable proposal; a read-only verification is captured as knowledge
+   only. It never writes the skill.
 4. Open **Settings → Project Evolution → Evolution**, inspect the diff, checks,
    and evidence replay, then **Accept**.
 5. The skill appears at `.dsh/skills/<name>/SKILL.md`. A new DSH dialog in the

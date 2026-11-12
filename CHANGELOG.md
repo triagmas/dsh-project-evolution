@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.1 — 2026-11-12
+
+- Automatic capture now requires a real file change or an explicit user
+  correction before creating a skill proposal. Read-only verification remains
+  knowledge; manual Analyze can still create a review item.
+- Generated skill names strip conversational lead-ins, normalize gerunds, and
+  drop articles, so prompts like "You are auditing..." no longer become
+  `use-you-are-...`.
+
 ## 1.0.0 — 2026-11-12
 
 First public release.

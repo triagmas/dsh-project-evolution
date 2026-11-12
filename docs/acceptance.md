@@ -61,6 +61,8 @@ It asserts, among other things:
 - Web API success/error/404/409 paths, JSON errors;
 - default-off auto-accept and the rule that Analyze/manual proposals never
   auto-apply;
+- read-only verification is captured as knowledge but not auto-proposed;
+  manual Analyze can still create a review item;
 - the client loader contract, settings registration, and EN/RU key parity;
 - the model tool surface has no accept/apply/rollback tool.
 

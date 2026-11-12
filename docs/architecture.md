@@ -45,7 +45,7 @@ agent/turn-stopping
       explicit corrections, completion reason
       evidence score, confidence
   → knowledgeFromSignals → mask/dedupe/append
-  → maybePropose (threshold, cooldown, budget)
+  → maybePropose (file edit or correction, threshold, cooldown, budget)
       → backtest cases from artifacts
       → baseline vs candidate replay
       → proposal (status proposed/blocked)

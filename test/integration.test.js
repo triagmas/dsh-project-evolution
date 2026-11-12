@@ -21,6 +21,19 @@ async function setup({ config = {}, homeConfig = {} } = {}) {
   return { root, home, session, ctx, service, logger }
 }
 
+function readOnlyTurnEvents() {
+  const events = turnEvents({
+    user: 'You are auditing an existing repository READ-ONLY. Do not modify any file.',
+    command: 'npm test',
+    output: '# tests 1\n# pass 1\n# fail 0',
+  })
+  return events.filter((event) => {
+    const data = event.data ?? {}
+    const callId = data.callId ?? data.message?.toolCallId
+    return data.name !== 'edit' && callId !== 'c1a'
+  })
+}
+
 function route(service, suffix) {
   return createRoutes(service, { info() {}, warn() {} }).find((item) => item.path.endsWith(suffix))
 }
@@ -147,6 +160,23 @@ test('auto-accept is OFF by default and only the automatic verified path may use
   const manualBody = await manual.json()
   assert.equal(manualBody.result.proposal.status, 'proposed')
   await assert.rejects(() => readFile(join(second.root, '.dsh', 'skills', 'use-manual-no-auto', 'SKILL.md')), /ENOENT/)
+})
+
+test('read-only verification is knowledge, not an automatic skill proposal', async () => {
+  const root = await gitProject()
+  const home = await tempDir('dsh-pe-home-')
+  const events = readOnlyTurnEvents()
+  const session = fakeSession({ id: 's1', cwd: root, events })
+  const service = new EvolutionService({ ctx: fakeCtx([session]), dshHome: home, config: {} })
+
+  await service.captureTurn({ agent: { session }, turn: 1, events })
+  const overview = await service.overview('s1')
+  assert.equal(overview.proposals.length, 0)
+  assert.ok((await service.knowledge('s1')).length > 0)
+
+  const manual = await service.action('s1', { action: 'analyze' })
+  assert.equal(manual.proposal.proposal.status, 'proposed')
+  assert.equal(manual.proposal.proposal.skill, 'audit-existing-repository-read-only')
 })
 
 test('model tools expose status/recall/record/propose but no apply', async () => {

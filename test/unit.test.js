@@ -121,7 +121,10 @@ test('generated skill passes its own evidence replay and is self-describing', ()
 test('skill names are deterministic and bounded', () => {
   assert.equal(proposedSkillName('Add subtraction helper'), 'add-subtraction-helper')
   assert.equal(proposedSkillName('Add subtraction helper', ['add-subtraction-helper']), 'add-subtraction-helper-2')
-  assert.equal(proposedSkillName('Add subtraction helper and run the test and'), 'add-subtraction-helper-and-run-the-test')
+  assert.equal(proposedSkillName('Add subtraction helper and run the test and'), 'add-subtraction-helper-and-run-test')
+  assert.equal(proposedSkillName('You are auditing an existing repository READ-ONLY'), 'audit-existing-repository-read-only')
+  assert.equal(proposedSkillName('Please review the session guard'), 'review-session-guard')
+  assert.equal(proposedSkillName('Can you add a subtraction helper?'), 'add-subtraction-helper')
   assert.ok(proposedSkillName('x'.repeat(200)).length <= 64)
 })
 

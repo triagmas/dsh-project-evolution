@@ -192,6 +192,10 @@ export class EvolutionService {
   async maybePropose(store, project, signals, { config, force = false } = {}) {
     if (!force) {
       if (!config.enabled) return undefined
+      // Read-only verification is useful knowledge, but it is not a reusable
+      // project procedure yet. Auto-capture must see a real file change or an
+      // explicit correction; Analyze/tool proposals can still opt in manually.
+      if (signals.fileEdits.length === 0 && signals.corrections.length === 0) return undefined
       if (signals.evidenceScore < config.minEvidenceScore) return undefined
       if (signals.confidence !== 'confirmed' && signals.kind !== 'correction' && signals.kind !== 'solution') return undefined
       const lastAt = Date.parse((await store.readState()).lastProposalAt ?? 0)

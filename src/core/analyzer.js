@@ -340,11 +340,66 @@ export function knowledgeFromSignals(signals) {
   })
 }
 
+const SKILL_LEAD_INS = [
+  /^please\s+/i,
+  /^(?:can|could|would|will|should)\s+you\s+/i,
+  /^(?:please\s+)?(?:you(?:'re| are)|we(?:'re| are)|i(?:'m| am))\s+/i,
+  /^(?:please\s+)?(?:help me|let us|let's|i need to|we need to|you need to|need to|i want to|we want to)\s+/i,
+  /^(?:the\s+)?user\s+(?:says|said|asks|asked|wants|wanted)\s*:?\s*/i,
+  /^(?:task|prompt)\s*:\s*/i,
+]
+
+const GERUND_TO_VERB = new Map([
+  ['auditing', 'audit'], ['reviewing', 'review'], ['checking', 'check'],
+  ['testing', 'test'], ['fixing', 'fix'], ['adding', 'add'], ['updating', 'update'],
+  ['creating', 'create'], ['implementing', 'implement'], ['building', 'build'],
+  ['refactoring', 'refactor'], ['migrating', 'migrate'], ['debugging', 'debug'],
+  ['deploying', 'deploy'], ['writing', 'write'], ['reading', 'read'],
+  ['inspecting', 'inspect'], ['analyzing', 'analyze'], ['running', 'run'],
+  ['verifying', 'verify'], ['configuring', 'configure'], ['installing', 'install'],
+  ['publishing', 'publish'], ['removing', 'remove'], ['moving', 'move'],
+  ['renaming', 'rename'], ['optimizing', 'optimize'], ['profiling', 'profile'],
+  ['benchmarking', 'benchmark'], ['reproducing', 'reproduce'], ['guarding', 'guard'],
+  ['protecting', 'protect'], ['validating', 'validate'], ['formatting', 'format'],
+  ['linting', 'lint'], ['syncing', 'sync'], ['starting', 'start'],
+  ['stopping', 'stop'], ['restarting', 'restart'], ['documenting', 'document'],
+  ['planning', 'plan'], ['designing', 'design'], ['generating', 'generate'],
+])
+
+const ACTION_WORDS = new Set([
+  'use', 'run', 'apply', 'verify', 'build', 'test', 'debug', 'fix', 'add', 'update',
+  'create', 'migrate', 'deploy', 'review', 'audit', 'inspect', 'analyze', 'check',
+  'implement', 'refactor', 'read', 'write', 'document', 'configure', 'install',
+  'publish', 'release', 'remove', 'move', 'rename', 'optimize', 'profile',
+  'benchmark', 'reproduce', 'guard', 'protect', 'validate', 'format', 'lint',
+  'typecheck', 'sync', 'bootstrap', 'setup', 'start', 'stop', 'restart', 'plan',
+  'design', 'generate', 'extract', 'compare', 'merge', 'split', 'replace', 'clean',
+  'prune', 'rotate', 'backup', 'restore', 'record', 'capture', 'propose', 'accept',
+  'reject', 'rollback',
+])
+
+function stripSkillLeadIn(title) {
+  let value = String(title ?? '').trim()
+  // A user prompt often starts with a conversational frame. Strip the frame
+  // before deriving a name; otherwise a whole sentence becomes a slug.
+  for (let pass = 0; pass < 4; pass += 1) {
+    const before = value
+    for (const pattern of SKILL_LEAD_INS) value = value.replace(pattern, '')
+    value = value.trim()
+    if (value === before) break
+  }
+  return value
+}
+
 export function proposedSkillName(title, existingNames = []) {
-  // Keep generated names readable: drop dangling conjunctions left by a
-  // character cut, and cut on a word boundary instead of mid-word.
+  // Keep generated names readable: drop leading conversational frames,
+  // normalize a gerund to an imperative verb, drop articles, and cut on a
+  // word boundary instead of mid-word.
   const stopwords = new Set(['a', 'an', 'and', 'or', 'then', 'to', 'for', 'of', 'in', 'on', 'at', 'by', 'with', 'from'])
-  const words = slugify(title).split('-').filter(Boolean)
+  const words = slugify(stripSkillLeadIn(title)).split('-')
+    .filter(Boolean)
+    .filter((word) => !['a', 'an', 'the'].includes(word))
+  if (words.length > 0 && GERUND_TO_VERB.has(words[0])) words[0] = GERUND_TO_VERB.get(words[0])
   while (words.length > 2 && stopwords.has(words[words.length - 1])) words.pop()
   let base = words.join('-')
   if (base.length > 50) {
@@ -359,9 +414,8 @@ export function proposedSkillName(title, existingNames = []) {
   while (base.endsWith('-')) base = base.slice(0, -1)
   base = base || 'project-workflow'
   let name = base
-  if (!/^(?:use|run|apply|verify|build|test|debug|fix|add|update|create|migrate|deploy|review)-/.test(name)) {
-    name = `use-${name}`
-  }
+  const firstWord = name.split('-')[0]
+  if (!ACTION_WORDS.has(firstWord)) name = `use-${name}`
   name = name.slice(0, 64)
   while (name.endsWith('-')) name = name.slice(0, -1)
   let index = 2
