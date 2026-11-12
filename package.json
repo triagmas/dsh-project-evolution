@@ -20,7 +20,12 @@
     "README.md",
     "LICENSE",
     "docs/**/*.md",
-    "docs/**/*.png"
+    "docs/**/*.png",
+    "test/**/*.js",
+    "scripts/**/*.mjs",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "screenshots.json"
   ],
   "keywords": [
     "dsh",
