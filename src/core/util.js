@@ -77,10 +77,11 @@ export function parseFrontmatter(markdown) {
   const body = text.slice(end + (text.slice(end).startsWith('\r\n---\r\n') ? 7 : 5))
   const data = {}
   for (const line of raw.split(/\r?\n/)) {
-    const match = /^([A-Za-z0-9_.-]+):\s*(.*)$/.exec(line)
-    if (!match) continue
-    const [, key, rest] = match
-    let value = rest.trim()
+    const colon = line.indexOf(':')
+    if (colon <= 0) continue
+    const key = line.slice(0, colon)
+    if (!/^[A-Za-z0-9_.-]+$/.test(key)) continue
+    let value = line.slice(colon + 1).trim()
     if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
       value = value.slice(1, -1)
     }

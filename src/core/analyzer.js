@@ -350,17 +350,20 @@ export function proposedSkillName(title, existingNames = []) {
   if (base.length > 50) {
     const cut = base.slice(0, 50)
     const boundary = cut.lastIndexOf('-')
-    base = (boundary > 0 ? cut.slice(0, boundary) : cut).replace(/-+$/g, '')
+    base = boundary > 0 ? cut.slice(0, boundary) : cut
+    while (base.endsWith('-')) base = base.slice(0, -1)
   }
   while (base.includes('-') && stopwords.has(base.slice(base.lastIndexOf('-') + 1))) {
     base = base.slice(0, base.lastIndexOf('-'))
   }
-  base = base.replace(/-+$/g, '') || 'project-workflow'
+  while (base.endsWith('-')) base = base.slice(0, -1)
+  base = base || 'project-workflow'
   let name = base
   if (!/^(?:use|run|apply|verify|build|test|debug|fix|add|update|create|migrate|deploy|review)-/.test(name)) {
     name = `use-${name}`
   }
-  name = name.slice(0, 64).replace(/-+$/g, '')
+  name = name.slice(0, 64)
+  while (name.endsWith('-')) name = name.slice(0, -1)
   let index = 2
   const taken = new Set(existingNames)
   while (taken.has(name)) {

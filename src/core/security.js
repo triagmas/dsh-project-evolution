@@ -120,6 +120,15 @@ export function sanitizeForStorage(value, options = {}) {
   }
 }
 
+function frontmatterField(block, field) {
+  const prefix = `${field}:`
+  for (const line of block.split(/\r?\n/)) {
+    if (!line.startsWith(prefix)) continue
+    return line.slice(prefix.length).trim().replace(/^["']|["']$/g, '')
+  }
+  return ''
+}
+
 export function validateSkillContent(content, expectedName) {
   const text = String(content ?? '')
   const errors = []
@@ -131,8 +140,8 @@ export function validateSkillContent(content, expectedName) {
     errors.push('Missing YAML frontmatter delimited by --- lines.')
   } else {
     const block = frontmatter[1]
-    const name = /^name:[ \t]*(.*)$/m.exec(block)?.[1]?.trim().replace(/^["']|["']$/g, '')
-    const description = /^description:[ \t]*(.*)$/m.exec(block)?.[1]?.trim().replace(/^["']|["']$/g, '')
+    const name = frontmatterField(block, 'name')
+    const description = frontmatterField(block, 'description')
     if (!name) errors.push('Frontmatter requires a name.')
     if (!description) errors.push('Frontmatter requires a description.')
     if (name && expectedName && name !== expectedName) {
