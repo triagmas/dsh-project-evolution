@@ -1,5 +1,7 @@
 # Project Evolution for DeepSeek Harness
 
+[![npm](https://img.shields.io/npm/v/dsh-project-evolution?style=flat-square)](https://www.npmjs.com/package/dsh-project-evolution)
+
 Project Evolution turns **verified project work** into knowledge and reusable
 skills without turning a project into a pile of unreviewed `SKILL.md` files.
 
