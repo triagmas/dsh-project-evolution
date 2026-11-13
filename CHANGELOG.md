@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2 — 2026-11-13
+
+- Balanced the conversation view insets: more room above the title, a left
+  gutter matching the right edge, and extra space below the last card.
+
 ## 1.1.1 — 2026-11-13
 
 - Fixed the fifth-tab layout touching the right window edge; the view now keeps

@@ -417,7 +417,7 @@ window.__ModuleLoader__.load({
     }
 
     const css = `
-.pe-root{--pe-radius:12px;--pe-gap:14px;color:var(--dsw-alias-label-primary);font-size:13px;line-height:1.5;width:100%;max-width:1160px;margin:0 auto;padding:2px 16px 28px 2px;box-sizing:border-box;container-type:inline-size;min-width:0;overflow-x:clip}
+.pe-root{--pe-radius:12px;--pe-gap:14px;color:var(--dsw-alias-label-primary);font-size:13px;line-height:1.5;width:100%;max-width:1160px;margin:0 auto;padding:12px 16px 40px 20px;box-sizing:border-box;container-type:inline-size;min-width:0;overflow-x:clip}
 .pe-root *{box-sizing:border-box}
 .pe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 0 14px;flex-wrap:wrap}
 .pe-title{margin:0 0 3px;font-size:18px;font-weight:650;letter-spacing:-.01em}
