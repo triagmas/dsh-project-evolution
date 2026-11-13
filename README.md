@@ -59,7 +59,7 @@ Manager at the tarball):
 
 ```bash
 npm pack
-dsh plugin --profile <profile> add ./dsh-project-evolution-1.1.2.tgz
+dsh plugin --profile <profile> add ./dsh-project-evolution-1.1.3.tgz
 ```
 
 Enable the **Project Evolution** bundle after installation and reload the Web
@@ -134,7 +134,7 @@ corrections, and global publication permission.
 The UI is localized in English (default) and Russian, follows the DSH light/dark
 theme tokens, and is responsive at narrow widths. The 1.0.x screenshots in
 `docs/screenshots/` show the old Settings-only placement and are intentionally
-not embedded for 1.1.2; capture new ones from the conversation tab after a live
+not embedded for 1.1.x; capture new ones from the conversation tab after a live
 installation.
 
 ## Data layout

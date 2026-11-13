@@ -1,6 +1,6 @@
 {
   "name": "dsh-project-evolution",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Project-isolated, evidence-backed engineering experience and reviewable project skills for DeepSeek Harness.",
   "type": "module",
   "license": "MIT",

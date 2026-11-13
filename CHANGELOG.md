@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3 — 2026-11-13
+
+- Fixed the primary button label disappearing in the dark theme: the label now
+  uses the theme foreground token instead of hard-coded white, and the hover
+  state keeps the same readable pairing.
+
 ## 1.1.2 — 2026-11-13
 
 - Balanced the conversation view insets: more room above the title, a left

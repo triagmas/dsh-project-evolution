@@ -430,7 +430,8 @@ window.__ModuleLoader__.load({
 .pe-btn{appearance:none;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);border-radius:8px;padding:6px 11px;font:inherit;font-size:12px;font-weight:550;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:30px}
 .pe-btn:hover{background:var(--dsw-alias-bg-layer-2)}
 .pe-btn:disabled{opacity:.45;cursor:default}
-.pe-btn-primary{background:var(--dsw-alias-brand-primary);border-color:var(--dsw-alias-brand-primary);color:#fff}
+.pe-btn-primary{background:var(--dsw-alias-brand-primary);border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-label-primary-foreground)}
+.pe-btn-primary:hover{background:var(--dsw-alias-button-primary-hover);border-color:var(--dsw-alias-button-primary-hover);color:var(--dsw-alias-label-primary-foreground)}
 .pe-btn-danger{color:var(--dsw-alias-state-error-primary);border-color:var(--dsw-alias-state-error-primary)}
 .pe-btn-ghost{background:transparent;border-color:transparent;color:var(--dsw-alias-label-secondary)}
 .pe-btn-ghost:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}

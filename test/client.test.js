@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { readFileSync } from 'node:fs'
 
 test('client bundle registers the conversation view and global settings section with EN/RU dictionaries', async () => {
   let definition
@@ -56,4 +57,11 @@ test('client bundle registers the conversation view and global settings section 
   assert.equal(dictionaries.value.en['nav.conversation'], 'Evolution')
   assert.equal(dictionaries.value.ru['nav.conversation'], 'Эволюция')
   assert.ok(en.includes('evolution.acceptConfirm'))
+})
+
+test('primary action buttons keep a readable foreground in both themes', () => {
+  const source = readFileSync(new URL('../client.js', import.meta.url), 'utf8')
+  assert.match(source, /\.pe-btn-primary\{[^}]*color:var\(--dsw-alias-label-primary-foreground\)/)
+  assert.match(source, /\.pe-btn-primary:hover\{[^}]*color:var\(--dsw-alias-label-primary-foreground\)/)
+  assert.doesNotMatch(source, /\.pe-btn-primary\{[^}]*color:#fff/)
 })
