@@ -26,7 +26,15 @@ No external service, no telemetry, and **no model call** are made by the plugin.
 
 ## Install
 
-### From the prebuilt GitHub release (recommended)
+### From npm (recommended)
+
+```bash
+dsh plugin --profile <profile> add dsh-project-evolution
+```
+
+npm installs the prebuilt package and runs no install-time build scripts.
+
+### From the prebuilt GitHub release
 
 The release tarball is built from the tagged source; no install-time build
 scripts are involved:
