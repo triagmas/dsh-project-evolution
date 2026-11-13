@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.1 — 2026-11-13
+
+- Fixed the fifth-tab layout touching the right window edge; the view now keeps
+  a right inset at narrow widths.
+- Kept the automation form in two columns at ~700px panel widths instead of
+  collapsing every field into one long column.
+- Settings → Project Evolution scrolls back to its project index when the
+  settings panel remembers an old scroll position.
+- Rendered the numbered overview steps inline instead of leaving the number
+  alone on its own line.
+
 ## 1.1.0 — 2026-11-13
 
 - Project Evolution now opens as a fifth conversation view tab next to Chat,

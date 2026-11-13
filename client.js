@@ -417,7 +417,7 @@ window.__ModuleLoader__.load({
     }
 
     const css = `
-.pe-root{--pe-radius:12px;--pe-gap:14px;color:var(--dsw-alias-label-primary);font-size:13px;line-height:1.5;width:100%;max-width:1160px;margin:0 auto;padding:2px 2px 28px;box-sizing:border-box;container-type:inline-size;min-width:0;overflow-x:clip}
+.pe-root{--pe-radius:12px;--pe-gap:14px;color:var(--dsw-alias-label-primary);font-size:13px;line-height:1.5;width:100%;max-width:1160px;margin:0 auto;padding:2px 16px 28px 2px;box-sizing:border-box;container-type:inline-size;min-width:0;overflow-x:clip}
 .pe-root *{box-sizing:border-box}
 .pe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 0 14px;flex-wrap:wrap}
 .pe-title{margin:0 0 3px;font-size:18px;font-weight:650;letter-spacing:-.01em}
@@ -507,7 +507,8 @@ window.__ModuleLoader__.load({
 .pe-spinner{width:18px;height:18px;border-radius:50%;border:2px solid var(--dsw-alias-border-l1);border-top-color:var(--dsw-alias-brand-primary);animation:pe-spin .8s linear infinite;margin-bottom:8px}
 @keyframes pe-spin{to{transform:rotate(360deg)}}
 @media (max-width:820px){.pe-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.pe-split,.pe-split-narrow{grid-template-columns:1fr}.pe-scroll{max-height:300px}.pe-kv{grid-template-columns:95px minmax(0,1fr)}}
-@container (max-width:700px){.pe-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.pe-grid-2,.pe-split,.pe-split-narrow{grid-template-columns:1fr}}
+@container (max-width:700px){.pe-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.pe-split,.pe-split-narrow{grid-template-columns:1fr}}
+@container (max-width:620px){.pe-grid-2{grid-template-columns:1fr}}
 @container (max-width:360px){.pe-kv{grid-template-columns:1fr;gap:2px}.pe-kv dt{margin-top:7px}.pe-kv dt:first-child{margin-top:0}}
 @media (max-width:480px){.pe-grid-4,.pe-grid-2{grid-template-columns:1fr}.pe-tab{padding:8px 9px}.pe-title{font-size:16px}.pe-root{padding-bottom:18px}}
 @media (prefers-reduced-motion:reduce){.pe-spinner{animation:none}}
@@ -709,7 +710,7 @@ window.__ModuleLoader__.load({
           h('h3', { className: 'pe-card-title' }, t('overview.how')),
           h('div', { className: 'pe-timeline' },
             [t('overview.step1'), t('overview.step2'), t('overview.step3')].map((text, index) =>
-              h('div', { className: 'pe-time-item', key: index }, h('span', { className: 'pe-dot' }), h('div', null, h('div', { className: 'pe-time-title' }, `${index + 1}.`), h('div', { className: 'pe-muted' }, text)))),
+              h('div', { className: 'pe-time-item', key: index }, h('span', { className: 'pe-dot' }), h('div', null, h('span', { className: 'pe-time-title' }, `${index + 1}. `), h('span', { className: 'pe-muted' }, text)))),
           ),
         ),
         h('div', { className: 'pe-card' },
@@ -1366,6 +1367,15 @@ State the concrete trigger, project area, and preconditions.
       const [busy, setBusy] = React.useState('')
       const [error, setError] = React.useState('')
       const [notice, setNotice] = React.useState(null)
+      const rootRef = React.useRef(null)
+
+      React.useEffect(() => {
+        const node = rootRef.current
+        if (!node || typeof node.getBoundingClientRect !== 'function') return
+        if (node.getBoundingClientRect().top < 0 && typeof node.scrollIntoView === 'function') {
+          node.scrollIntoView({ block: 'start', inline: 'nearest' })
+        }
+      }, [])
 
       const notify = React.useCallback((message, kind = 'error') => {
         setNotice({ message, kind })
@@ -1431,7 +1441,7 @@ State the concrete trigger, project area, and preconditions.
       const skills = detail?.catalog?.project || []
       const selectedTitle = selected ? (selected.title || selected.name || t('settings.untitledProject')) : ''
 
-      return h('div', { className: 'pe-root pe-global-settings' },
+      return h('div', { ref: rootRef, className: 'pe-root pe-global-settings' },
         h('div', { className: 'pe-head' },
           h('div', null,
             h('h2', { className: 'pe-title' }, t('settings.projectsTitle')),
