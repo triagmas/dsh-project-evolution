@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-test('client bundle registers its settings section and ships EN/RU dictionaries', async () => {
+test('client bundle registers the conversation view and global settings section with EN/RU dictionaries', async () => {
   let definition
   globalThis.window = {
     __ModuleLoader__: { load(value) { definition = value } },
@@ -21,7 +21,8 @@ test('client bundle registers its settings section and ships EN/RU dictionaries'
   const module = definition.factory(() => React)
   assert.deepEqual(module.inject, ['slots', 'locale'])
   let dictionaries
-  let section
+  const registrations = []
+  const renderers = []
   const ctx = {
     effect(callback) { return callback() },
     locale: {
@@ -32,18 +33,27 @@ test('client bundle registers its settings section and ships EN/RU dictionaries'
     },
     slots: {
       inject(name, callback) { callback() },
-      register(options) { section = options; return () => {} },
+      register(options, renderer) { registrations.push(options); renderers.push(renderer); return () => {} },
     },
   }
   assert.doesNotThrow(() => module.apply(ctx))
   assert.equal(dictionaries.namespace, 'projectEvolution')
-  assert.equal(section.name, 'settings.section')
-  assert.equal(section.id, 'project-evolution')
-  assert.equal(section.order, 35)
-  assert.equal(typeof section.label, 'function')
+  const bySlot = Object.fromEntries(registrations.map((registration) => [registration.name, registration]))
+  assert.deepEqual(Object.keys(bySlot).sort(), ['conversation.view', 'settings.section'])
+  assert.equal(bySlot['conversation.view'].id, 'project-evolution')
+  assert.equal(bySlot['conversation.view'].order, 40)
+  assert.equal(typeof bySlot['conversation.view'].label, 'function')
+  assert.equal(bySlot['settings.section'].id, 'project-evolution')
+  assert.equal(bySlot['settings.section'].order, 35)
+  assert.equal(typeof bySlot['settings.section'].label, 'function')
+  assert.equal(renderers.length, 2)
+  assert.equal(renderers.every((renderer) => typeof renderer === 'function'), true)
   const en = Object.keys(dictionaries.value.en).sort()
   const ru = Object.keys(dictionaries.value.ru).sort()
   assert.deepEqual(ru, en)
   assert.ok(en.includes('tabs.overview'))
+  assert.ok(en.includes('nav.conversation'))
+  assert.equal(dictionaries.value.en['nav.conversation'], 'Evolution')
+  assert.equal(dictionaries.value.ru['nav.conversation'], 'Эволюция')
   assert.ok(en.includes('evolution.acceptConfirm'))
 })

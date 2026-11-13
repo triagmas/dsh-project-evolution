@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.1.0 — 2026-11-13
+
+- Project Evolution now opens as a fifth conversation view tab next to Chat,
+  Trajectory, Context, and Fleet, scoped to the current chat's project.
+- Settings → Project Evolution is now a global cross-project page: choose any
+  project discovered from DSH workspaces or project sessions, then inspect its
+  skills, knowledge counts, chats, and storage paths.
+- Added `GET /api/project-evolution/projects`. The host derives projects from
+  DSH-owned workspace/session metadata, including persisted headers from
+  `ctx.sessionQuery`, and still never accepts an arbitrary filesystem path from
+  the browser. Project-scoped routes now require a session.
+- Global automation settings can be saved without a session.
+- Project listing and overview are read-only: selecting a project in Settings
+  no longer creates `.dsh` directories; capture and explicit actions still do.
+- Closed chats remain discoverable after a Host restart through persisted
+  `sessionQuery` headers. Project-scoped routes reject a missing session.
+- Updated model-tool and prompt copy to point reviewers at the conversation tab.
+
 ## 1.0.1 — 2026-11-12
 
 - Automatic capture now requires a real file change or an explicit user

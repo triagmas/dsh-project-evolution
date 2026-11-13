@@ -29,6 +29,7 @@ PASS rollback restores an earlier content-addressed version
 PASS second project is isolated from the first project knowledge and skills
 PASS evidence is Git-ignored while project skills remain usual tracked files
 PASS Web API route returns the scoped overview
+PASS global projects API returns config and both project roots with chat counts
 ```
 
 It asserts, among other things:
@@ -43,7 +44,9 @@ It asserts, among other things:
 - versions preserve the diff metadata; rollback restores byte-identical v1;
 - project B cannot see project A's knowledge or skill;
 - Git ignores the evidence directory and shows the project skill as untracked;
-- the overview route returns HTTP 200 and the correct project root.
+- the overview route returns HTTP 200 and the correct project root;
+- the global projects API returns both project roots, their chat counts, and
+  the default-off auto-accept config without a session.
 
 ## Unit and integration coverage
 
@@ -56,6 +59,8 @@ It asserts, among other things:
 - analyzer filtering of synthetic user messages, `# fail 0`, own-turn
   corrections, generated content, and replay PASS/FAIL/NOT_TESTED;
 - project store deduplication, caps, and corrupt-state quarantine;
+- project grouping from live sessions and persisted `sessionQuery` headers,
+  plus `SESSION_REQUIRED` on sessionless project routes;
 - proposal → apply → edit → rollback → global publish, including version diffs;
 - conservative config normalization;
 - Web API success/error/404/409 paths, JSON errors;
@@ -63,16 +68,17 @@ It asserts, among other things:
   auto-apply;
 - read-only verification is captured as knowledge but not auto-proposed;
   manual Analyze can still create a review item;
-- the client loader contract, settings registration, and EN/RU key parity;
+- the client loader contract, conversation/settings registration, and EN/RU key parity;
 - the model tool surface has no accept/apply/rollback tool.
 
 ## What is not covered by a real browser yet
 
 The host and client contracts are tested without a browser. Before relying on
-the UI in production, install the bundle into a test profile, open
-**Settings → Project Evolution**, and verify the five tabs render in both light
-and dark themes and at a narrow width. Installation into a live profile is a
-separate, explicit user decision.
+the UI in production, install the bundle into a test profile, open the
+**Evolution** conversation tab (fifth after Chat, Trajectory, Context,
+Fleet), and verify its four tabs plus the global **Settings → Project
+Evolution** page render in both light and dark themes and at a narrow width.
+Installation into a live profile is a separate, explicit user decision.
 
 ## Interpreting `PASS`
 

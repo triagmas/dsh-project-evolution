@@ -1,8 +1,9 @@
 /**
- * Authenticated exact Fetch routes for the Project Evolution settings page.
+ * Authenticated exact Fetch routes for the Project Evolution conversation view and settings page.
  * These routes live below `/api`, are owner-only through DSH Connection, and
  * never accept an arbitrary filesystem path from the browser: the session id
- * is resolved against `ctx.sessions`.
+ * is resolved against live sessions and, when mounted, persisted session
+ * headers from `ctx.sessionQuery`.
  */
 import { nowIso } from './util.js'
 
@@ -84,6 +85,21 @@ async function bodyOf(request) {
 
 export function createRoutes(service, logger = console) {
   return [
+    {
+      path: `${PREFIX}/projects`,
+      methods: ['GET'],
+      requestBody: 'buffered',
+      async fetch() {
+        try {
+          const [projects, config] = await Promise.all([service.projects(), service.effectiveConfig()])
+          return json({ ok: true, projects, config })
+        } catch (error) {
+          logger?.warn?.(`project-evolution projects: ${error?.message ?? error}`)
+          const failure = errorBody(error)
+          return json(failure.body, failure.status)
+        }
+      },
+    },
     {
       path: `${PREFIX}/overview`,
       methods: ['GET'],

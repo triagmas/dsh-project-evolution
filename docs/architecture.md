@@ -26,7 +26,7 @@ Markdown. The design therefore separates four things that are often conflated:
 | `src/core/service.js` | orchestration shared by Web actions and model tools; locking and budgets |
 | `src/core/routes.js` | authenticated exact Fetch routes below `/api/project-evolution` |
 | `src/core/tools.js` | four model-facing read/record/propose tools |
-| `client.js` | `settings.section` Web UI, EN/RU dictionaries, theme-token CSS |
+| `client.js` | `conversation.view` project UI, global `settings.section`, EN/RU dictionaries, theme-token CSS |
 
 Pure modules (`analyzer`, `security`, `project`, `util`) have no DSH service
 dependency and are unit-tested directly.
@@ -106,23 +106,37 @@ files and never copies a project skill automatically.
 
 ## Web/API boundary
 
-The browser supplies only a session id and a skill name or proposal id. The host
-resolves the session's `cwd`, then the Git root. It never accepts an arbitrary
-filesystem path. Routes:
+The browser keeps a project key only as a local selector; it sends a session id
+plus a skill name or proposal id to the host. The host enumerates projects from
+the DSH workspace registry and session metadata. `ctx.sessions.list()` covers
+live sessions only, so the host also reads persisted headers through the mounted
+`ctx.sessionQuery` service when available; that keeps closed chats in the list
+after a Host restart. Each `cwd` is resolved to its canonical Git root, and the
+browser never supplies an arbitrary filesystem path. The project list carries a
+representative session id for each project; every follow-up route remains
+session-scoped and rejects a missing or unknown session. Routes:
 
 ```text
-GET  /api/project-evolution/overview?sessionId=
+GET  /api/project-evolution/projects
+GET  /api/project-evolution/overview?sessionId=   # read-only: no .dsh writes
 GET  /api/project-evolution/knowledge?sessionId=&query=
 GET  /api/project-evolution/skill?sessionId=&name=
 GET  /api/project-evolution/versions?sessionId=&name=
 POST /api/project-evolution/action
 ```
 
+`GET /projects` and `GET /overview` are read-only. The overview uses a
+non-cached store so selecting a project in the global Settings page does not
+create `.dsh` directories; capture and explicit actions still initialize the
+layout. Only `save-settings` is sessionless; every project-scoped route returns
+`SESSION_REQUIRED` without a session id.
+
 The action endpoint dispatches the same service methods used by model tools:
 `analyze`, `accept`, `reject`, `rollback`, `set-enabled`, `archive`,
 `publish-global`, `propose`, `record-note`, `propose-edit`,
 `delete-knowledge`, `save-settings`, `get-skill`, `list-versions`,
-`get-version`, `refresh`.
+`get-version`, `refresh`. `save-settings` is global and deliberately does not
+need a session; every other action still resolves a project through one.
 
 ## Isolation and lifecycle
 

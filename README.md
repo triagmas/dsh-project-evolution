@@ -7,8 +7,11 @@ It is a native DSH plugin bundle:
 
 - host half: project detection, evidence capture, knowledge store, proposal
   review, version history, rollback, two model tools plus two read/record tools;
-- Web half: a **Settings → Project Evolution** section with Overview, Skills,
-  Evolution, Knowledge, and Settings tabs;
+- Web half: a **Project Evolution** conversation view (the fifth tab, labelled
+  **Evolution**, after Chat, Trajectory, Context, and Fleet) with Overview,
+  Skills, Evolution, and
+  Knowledge tabs, plus a global **Settings → Project Evolution** page that
+  inspects every known project;
 - ordinary project skills at `<project>/.dsh/skills/<name>/SKILL.md`, discovered
   by DSH's native skill loader and tracked by Git like any other project file.
 
@@ -16,7 +19,7 @@ No external service, no telemetry, and **no model call** are made by the plugin.
 
 ## Requirements
 
-- DeepSeek Harness `0.2.2-rc.1` (the version this bundle was built and tested
+- DeepSeek Harness `0.2.2-rc.2` (the version this bundle was built and tested
   against)
 - Node.js 22+
 - A session opened in a project directory; Git is recommended but optional
@@ -46,7 +49,7 @@ Manager at the tarball):
 
 ```bash
 npm pack
-dsh plugin --profile <profile> add ./dsh-project-evolution-1.0.1.tgz
+dsh plugin --profile <profile> add ./dsh-project-evolution-1.1.0.tgz
 ```
 
 Enable the **Project Evolution** bundle after installation and reload the Web
@@ -68,8 +71,9 @@ for the public-release security policy and the checks performed on this tree.
    changed at least one file, or contains an explicit user correction, creates
    a reviewable proposal; a read-only verification is captured as knowledge
    only. It never writes the skill.
-4. Open **Settings → Project Evolution → Evolution**, inspect the diff, checks,
-   and evidence replay, then **Accept**.
+4. Open the **Project Evolution** tab in the conversation, switch to
+   **Evolution**, inspect the diff, checks, and evidence replay, then
+   **Accept**.
 5. The skill appears at `.dsh/skills/<name>/SKILL.md`. A new DSH dialog in the
    same project discovers it through the native skill catalog, and
    `project_evolution_recall` ranks it for matching tasks.
@@ -93,9 +97,11 @@ actually observed. It is not a model-quality benchmark and is not a claim that
 the skill will improve an unrelated task. Reports use `PASS`, `FAIL`, or
 `Not tested`; an unbacktested proposal cannot be auto-accepted.
 
-## Settings tabs
+## Views and settings
 
-![Project Evolution overview](docs/screenshots/overview.png)
+The Project Evolution conversation view is the fifth tab next to Chat,
+Trajectory, Context, and Fleet. It is scoped to the current conversation's
+project:
 
 - **Overview** — project root, Git state, counts, limits, recent runs, and how
   capture works.
@@ -106,20 +112,25 @@ the skill will improve an unrelated task. Reports use `PASS`, `FAIL`, or
   backtest, diff, accept/reject. Accepting is the only path that writes a skill.
 - **Knowledge** — searchable, project-isolated decisions/pitfalls/corrections;
   add a note or delete a row. Captured text is shown as untrusted evidence.
-- **Settings** — auto-analyze, auto-accept (off by default), evidence threshold,
-  capture interval, daily budgets, storage limits, retention, corrections, and
-  global publication permission.
 
-![Project Evolution settings](docs/screenshots/settings.png)
+**Settings → Project Evolution** is global. It lists projects discovered from
+DSH workspaces and existing project sessions (no arbitrary filesystem path is
+accepted from the browser), lets you choose one project, and shows its counts,
+project skills, and storage paths. The same page edits automation and limits,
+which apply to every project: auto-analyze, auto-accept (off by default),
+evidence threshold, capture interval, daily budgets, storage limits, retention,
+corrections, and global publication permission.
 
 The UI is localized in English (default) and Russian, follows the DSH light/dark
-theme tokens, and is responsive at narrow widths.
-
-![Project Evolution in Russian, dark theme](docs/screenshots/overview-ru-dark.png)
+theme tokens, and is responsive at narrow widths. The 1.0.x screenshots in
+`docs/screenshots/` show the old Settings-only placement and are intentionally
+not embedded for 1.1.0; capture new ones from the conversation tab after a live
+installation.
 
 ## Data layout
 
-Per project (Git-ignored evidence):
+Per project (Git-ignored evidence). Merely listing or inspecting a project is
+read-only; this layout is created by capture or an explicit action:
 
 ```text
 <project>/.dsh/project-evolution/
@@ -211,12 +222,13 @@ not a substitute for review on safety-critical projects.
   `skill_manage`, and it uses the same project/user scope conventions.
 - **`@michengai/dsh-skills-manager`** — its library, trash, routes, and UI are
   untouched. Project Evolution uses a separate `/api/project-evolution` route
-  namespace and a separate `settings.section` id.
+  namespace and separate `conversation.view` / `settings.section` ids.
 - No compatibility check is disabled, and no installed plugin's files are
   modified.
 
 See [docs/architecture.md](docs/architecture.md) for APIs, module boundaries,
-and lifecycle, [docs/security.md](docs/security.md) for the threat model, and
+and lifecycle, [docs/design.md](docs/design.md) for the navigation decision,
+[docs/security.md](docs/security.md) for the threat model, and
 [docs/acceptance.md](docs/acceptance.md) for reproducible evidence.
 
 ## Development

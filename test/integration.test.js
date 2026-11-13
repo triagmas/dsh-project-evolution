@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { readFile } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { EvolutionService } from '../src/core/service.js'
 import { createRoutes } from '../src/core/routes.js'
@@ -38,8 +38,9 @@ function route(service, suffix) {
   return createRoutes(service, { info() {}, warn() {} }).find((item) => item.path.endsWith(suffix))
 }
 
-async function call(service, suffix, { method = 'GET', sessionId = 's1', body, query = '' } = {}) {
-  const request = new Request(`http://127.0.0.1/api/project-evolution${suffix}?sessionId=${sessionId}${query}`, {
+async function call(service, suffix, { method = 'GET', sessionId = 's1', body, query = '', omitSession = false } = {}) {
+  const search = omitSession ? '?' : `?sessionId=${sessionId}`
+  const request = new Request(`http://127.0.0.1/api/project-evolution${suffix}${search}${query}`, {
     method,
     headers: body === undefined ? undefined : { 'content-type': 'application/json' },
     body: body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body),
@@ -60,6 +61,111 @@ test('routes return scoped overview and knowledge', async () => {
   const knowledge = await call(service, '/knowledge', { query: '&query=math' })
   assert.equal(knowledge.status, 200)
   assert.deepEqual((await knowledge.json()).knowledge, [])
+})
+
+test('projects list groups DSH workspaces and sessions by canonical project root', async () => {
+  const rootA = await gitProject()
+  const rootB = await gitProject()
+  const older = fakeSession({ id: 's1', cwd: rootA, events: [] })
+  const newer = fakeSession({ id: 's2', cwd: rootA, events: [] })
+  older.header.updatedAt = '2026-01-01T00:00:00.000Z'
+  newer.header.updatedAt = '2026-02-01T00:00:00.000Z'
+  const ctx = fakeCtx([older, newer])
+  ctx.workspaceRegistry = {
+    list: () => [
+      { id: 'w1', path: rootA, title: 'A workspace', updatedAt: '2026-02-01T00:00:00.000Z', sessionIds: ['s1', 's2'] },
+      { id: 'w2', path: rootB, title: 'B workspace', updatedAt: '2026-01-15T00:00:00.000Z', sessionIds: [] },
+    ],
+  }
+  const service = new EvolutionService({ ctx, dshHome: await tempDir('dsh-pe-home-'), config: {} })
+  const projects = await service.projects()
+  assert.equal(projects.length, 2)
+  const a = projects.find((project) => project.root === rootA)
+  const b = projects.find((project) => project.root === rootB)
+  assert.equal(a.sessionCount, 2)
+  assert.equal(a.workspaceCount, 1)
+  assert.equal(a.sessionId, 's2')
+  assert.equal(a.title, 'A workspace')
+  assert.equal(b.sessionCount, 0)
+  assert.equal(b.workspaceCount, 1)
+  assert.equal(b.sessionId, null)
+  await assert.rejects(access(join(rootA, '.dsh')))
+  await assert.rejects(access(join(rootB, '.dsh')))
+})
+
+test('projects include persisted session headers from sessionQuery', async () => {
+  const rootA = await gitProject()
+  const rootB = await gitProject()
+  const ctx = fakeCtx([])
+  ctx.workspaceRegistry = {
+    list: () => [
+      { id: 'w1', path: rootA, title: 'A', updatedAt: '2026-02-01T00:00:00.000Z' },
+      { id: 'w2', path: rootB, title: 'B', updatedAt: '2026-01-01T00:00:00.000Z' },
+    ],
+  }
+  ctx.sessionQuery = {
+    listSessions: async () => [
+      { header: { id: 'p1', cwd: rootA, createdAt: 1, isSeeded: false }, live: false, persisted: true },
+      { header: { id: 'p2', cwd: rootA, createdAt: 2, isSeeded: false }, live: false, persisted: true },
+    ],
+  }
+  const service = new EvolutionService({ ctx, dshHome: await tempDir('dsh-pe-home-'), config: {} })
+  const projects = await service.projects()
+  const a = projects.find((project) => project.root === rootA)
+  assert.equal(a.sessionCount, 2)
+  assert.equal(a.sessionId, 'p2')
+  const overview = await service.overview('p1')
+  assert.equal(overview.session.id, 'p1')
+  assert.equal(overview.project.root, rootA)
+  await assert.rejects(access(join(rootA, '.dsh')))
+})
+
+test('project routes require a session except save-settings', async () => {
+  const { service } = await setup()
+  const overview = await call(service, '/overview', { omitSession: true })
+  assert.equal(overview.status, 400)
+  assert.equal((await overview.json()).error.code, 'SESSION_REQUIRED')
+  const action = await call(service, '/action', { method: 'POST', omitSession: true, body: { action: 'analyze' } })
+  assert.equal(action.status, 400)
+  assert.equal((await action.json()).error.code, 'SESSION_REQUIRED')
+})
+
+test('global settings can be saved without a session', async () => {
+  const home = await tempDir('dsh-pe-home-')
+  const service = new EvolutionService({ ctx: fakeCtx([]), dshHome: home, config: {} })
+  const result = await service.action(undefined, { action: 'save-settings', settings: { autoAccept: true } })
+  assert.equal(result.config.autoAccept, true)
+  const stored = JSON.parse(await readFile(join(home, 'project-evolution', 'config.json'), 'utf8'))
+  assert.equal(stored.autoAccept, true)
+
+  const response = await call(service, '/action', {
+    method: 'POST',
+    omitSession: true,
+    body: { action: 'save-settings', settings: { autoAccept: false } },
+  })
+  assert.equal(response.status, 200)
+  const payload = await response.json()
+  assert.equal(payload.ok, true)
+  assert.equal(payload.result.config.autoAccept, false)
+})
+
+test('overview inspects a project without creating its evidence directory', async () => {
+  const { service, root } = await setup()
+  const payload = await service.overview('s1')
+  assert.equal(payload.project.root, root)
+  assert.equal(payload.status.counts.knowledge, 0)
+  await assert.rejects(access(join(root, '.dsh')))
+})
+
+test('projects route returns global config and known projects', async () => {
+  const { service, root } = await setup()
+  const response = await call(service, '/projects', { omitSession: true })
+  assert.equal(response.status, 200)
+  const payload = await response.json()
+  assert.equal(payload.ok, true)
+  assert.equal(payload.config.autoAccept, false)
+  assert.equal(payload.projects.length, 1)
+  assert.equal(payload.projects[0].root, root)
 })
 
 test('action route records knowledge, proposes a draft, and maps revision conflicts to 409', async () => {
@@ -218,7 +324,7 @@ test('host entry registers routes, tools, prompt section, observer, and cleanup'
   }
   await apply(ctx, { projectRoot: session.header.cwd })
   assert.deepEqual(registered.routes.map((item) => item.path), [
-    '/api/project-evolution/overview', '/api/project-evolution/knowledge', '/api/project-evolution/skill',
+    '/api/project-evolution/projects', '/api/project-evolution/overview', '/api/project-evolution/knowledge', '/api/project-evolution/skill',
     '/api/project-evolution/versions', '/api/project-evolution/action',
   ])
   assert.equal(registered.tools.length, 4)

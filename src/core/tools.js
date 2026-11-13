@@ -1,7 +1,7 @@
 /**
  * Model-facing tools. They are read/propose only by design: accepting,
  * rolling back, publishing, archiving, and editing are user actions in the
- * Web settings page. A model can collect and propose experience, but cannot
+ * Web UI. A model can collect and propose experience, but cannot
  * silently rewrite its own skills.
  */
 import { truncate } from './util.js'
@@ -72,7 +72,7 @@ export function createTools(service) {
       return JSON.stringify(result, null, 2)
     }),
 
-    tool('project_evolution_propose', 'Create a reviewable skill proposal from the last verified turn, or from an explicit skill draft. This DOES NOT write or apply a skill; the user reviews and accepts it in Settings → Project Evolution.', {
+    tool('project_evolution_propose', 'Create a reviewable skill proposal from the last verified turn, or from an explicit skill draft. This DOES NOT write or apply a skill; the user reviews and accepts it in the Project Evolution conversation tab.', {
       name: { type: 'string', description: 'Optional skill name (lowercase kebab-case). Omit to derive one.' },
       reason: { type: 'string', description: 'Why this procedure is reusable.' },
       content: { type: 'string', description: 'Optional complete SKILL.md draft. Omit to extract from the last turn.' },
@@ -93,7 +93,7 @@ export function createTools(service) {
         score: proposal.tests?.candidate?.score,
         checks: proposal.checks?.map((check) => ({ id: check.id, status: check.status })),
         diff: proposal.diff,
-        next: 'User reviews this proposal in Settings → Project Evolution. Nothing was applied.',
+        next: 'User reviews this proposal in the Project Evolution conversation tab. Nothing was applied.',
       }, null, 2)
     }),
 

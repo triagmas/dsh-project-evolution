@@ -8,6 +8,7 @@ window.__ModuleLoader__.load({
 
     const en = {
       'nav': 'Project Evolution',
+      'nav.conversation': 'Evolution',
       'title': 'Project Evolution',
       'subtitle': 'Verified project experience, reviewable skills, and reversible changes.',
       'tabs.overview': 'Overview',
@@ -177,6 +178,28 @@ window.__ModuleLoader__.load({
       'settings.saved': 'Settings saved.',
       'settings.autoAcceptOnWarning': 'Auto-accept is enabled. It will only write a skill after all required checks and a PASS backtest.',
       'settings.modelCallsZero': '0 (deterministic only)',
+      'settings.projectsTitle': 'All projects',
+      'settings.projectsSubtitle': 'Skills, knowledge, and evidence across every DSH workspace. Automation below is global.',
+      'settings.projectPicker': 'Choose a project',
+      'settings.projectsCount': 'Projects: {n}',
+      'settings.noProjects': 'No DSH workspaces or project sessions yet.',
+      'settings.noProjectSession': 'No chats in this project yet. Open a chat here to collect evidence.',
+      'settings.projectChats': '{n} chats',
+      'settings.projectWorkspaces': '{n} folders',
+      'settings.chats': 'Chats',
+      'settings.folders': 'Folders',
+      'settings.projectSkills': 'skills',
+      'settings.projectKnowledge': 'knowledge rows',
+      'settings.projectPending': 'pending proposals',
+      'settings.projectLastActive': 'Last activity',
+      'settings.projectSkillsTitle': 'Project skills',
+      'settings.projectNoSkills': 'No project skills yet.',
+      'settings.projectStorageTitle': 'Project storage',
+      'settings.projectNextTitle': 'Next step',
+      'settings.projectOpenHint': 'Open a chat in this project and use the Project Evolution tab to review proposals and run analyses.',
+      'settings.globalScope': 'These automation settings apply to every project.',
+      'settings.refreshProjects': 'Refresh list',
+      'settings.untitledProject': 'Untitled project',
       'error.noSession': 'No session is available. Open a project session first.',
       'error.action': 'Action failed: {message}',
       'error.load': 'Could not load Project Evolution: {message}',
@@ -190,6 +213,7 @@ window.__ModuleLoader__.load({
 
     const ru = {
       'nav': 'Эволюция проекта',
+      'nav.conversation': 'Эволюция',
       'title': 'Эволюция проекта',
       'subtitle': 'Подтверждённый опыт проекта, проверяемые навыки и обратимые изменения.',
       'tabs.overview': 'Обзор',
@@ -359,6 +383,28 @@ window.__ModuleLoader__.load({
       'settings.saved': 'Настройки сохранены.',
       'settings.autoAcceptOnWarning': 'Автопринятие включено. Запись произойдёт только после всех обязательных проверок и PASS-бэктеста.',
       'settings.modelCallsZero': '0 (только детерминированно)',
+      'settings.projectsTitle': 'Все проекты',
+      'settings.projectsSubtitle': 'Навыки, знания и доказательства по всем рабочим пространствам DSH. Автоматизация ниже — глобальная.',
+      'settings.projectPicker': 'Выберите проект',
+      'settings.projectsCount': 'Проектов: {n}',
+      'settings.noProjects': 'Пока нет рабочих пространств DSH или сессий проектов.',
+      'settings.noProjectSession': 'В этом проекте ещё нет чатов. Откройте чат здесь, чтобы собирать доказательства.',
+      'settings.projectChats': 'Чатов: {n}',
+      'settings.projectWorkspaces': 'Папок: {n}',
+      'settings.chats': 'Чаты',
+      'settings.folders': 'Папки',
+      'settings.projectSkills': 'навыков',
+      'settings.projectKnowledge': 'записей знаний',
+      'settings.projectPending': 'ожидают решения',
+      'settings.projectLastActive': 'Последняя активность',
+      'settings.projectSkillsTitle': 'Навыки проекта',
+      'settings.projectNoSkills': 'Проектных навыков пока нет.',
+      'settings.projectStorageTitle': 'Хранилище проекта',
+      'settings.projectNextTitle': 'Что дальше',
+      'settings.projectOpenHint': 'Откройте чат этого проекта и вкладку «Эволюция проекта», чтобы смотреть предложения и запускать анализ.',
+      'settings.globalScope': 'Эти настройки автоматизации применяются ко всем проектам.',
+      'settings.refreshProjects': 'Обновить список',
+      'settings.untitledProject': 'Проект без названия',
       'error.noSession': 'Нет доступной сессии. Сначала откройте сессию проекта.',
       'error.action': 'Действие не выполнено: {message}',
       'error.load': 'Не удалось загрузить «Эволюцию проекта»: {message}',
@@ -371,7 +417,7 @@ window.__ModuleLoader__.load({
     }
 
     const css = `
-.pe-root{--pe-radius:12px;--pe-gap:14px;color:var(--dsw-alias-label-primary);font-size:13px;line-height:1.5;padding:2px 2px 28px;box-sizing:border-box;container-type:inline-size}
+.pe-root{--pe-radius:12px;--pe-gap:14px;color:var(--dsw-alias-label-primary);font-size:13px;line-height:1.5;width:100%;max-width:1160px;margin:0 auto;padding:2px 2px 28px;box-sizing:border-box;container-type:inline-size;min-width:0;overflow-x:clip}
 .pe-root *{box-sizing:border-box}
 .pe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 0 14px;flex-wrap:wrap}
 .pe-title{margin:0 0 3px;font-size:18px;font-weight:650;letter-spacing:-.01em}
@@ -553,7 +599,10 @@ window.__ModuleLoader__.load({
       const list = useSessions((state) => state)
       const ids = Array.isArray(list?.ids) ? list.ids : Object.keys(list?.byId || {})
       if (!ids.length) return null
-      if (preferredId && list.byId?.[preferredId]) return list.byId[preferredId]
+      // A conversation view is scoped to the shell's active session. Never
+      // substitute another project's session when that id is not in this
+      // snapshot; the view will show its "no session" state instead.
+      if (preferredId) return list.byId?.[preferredId] ?? null
       let best = null
       let bestScore = -1
       for (const id of ids) {
@@ -1034,11 +1083,10 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function SettingsTab({ data, t, busy, onAction, notify }) {
-      const initial = data.config
-      const [form, setForm] = React.useState(initial)
+    function AutomationSettings({ config, t, busy, onAction, notify, storageRoot, globalScope }) {
+      const [form, setForm] = React.useState(config || {})
       const [dirty, setDirty] = React.useState(false)
-      React.useEffect(() => { if (!dirty) setForm(data.config) }, [data.config, dirty])
+      React.useEffect(() => { if (!dirty && config) setForm(config) }, [config, dirty])
       const update = (key, value) => {
         setDirty(true)
         setForm((current) => ({ ...current, [key]: value }))
@@ -1068,8 +1116,16 @@ window.__ModuleLoader__.load({
         }
       }
 
+      if (!config) return h('div', { className: 'pe-empty' }, t('common.loading'))
+
       return h('div', { className: 'pe-stack' },
-        h('div', { className: 'pe-section-head' }, h('div', null, h('h3', null, t('settings.title')), h('div', { className: 'pe-small pe-muted' }, t('settings.subtitle')))),
+        h('div', { className: 'pe-section-head' },
+          h('div', null,
+            h('h3', null, t('settings.title')),
+            h('div', { className: 'pe-small pe-muted' }, t('settings.subtitle')),
+            globalScope ? h('div', { className: 'pe-small pe-muted', style: { marginTop: 3 } }, t('settings.globalScope')) : null,
+          ),
+        ),
         h('div', { className: 'pe-grid pe-grid-2' },
           h('div', { className: 'pe-stack' },
             h(Toggle, { checked: form.enabled !== false, onChange: (value) => update('enabled', value), title: t('settings.enabled'), hint: t('settings.enabledHint') }),
@@ -1095,12 +1151,12 @@ window.__ModuleLoader__.load({
               h('div', { className: 'pe-small pe-muted', style: { marginBottom: 8 } }, t('settings.modelHint')),
               h('div', { className: 'pe-inline' }, badge(t('settings.modelCallsZero'), 'ok'), h('span', { className: 'pe-small pe-muted' }, t('settings.maxModelCalls') + ': 0')),
             ),
-            h('div', { className: 'pe-card' },
+            storageRoot ? h('div', { className: 'pe-card' },
               h('h3', { className: 'pe-card-title' }, t('settings.storage')),
               h('div', { className: 'pe-small pe-muted' }, t('settings.storageHint')),
-              h('div', { className: 'pe-code', style: { marginTop: 7 } }, data.project.root + '/.dsh/project-evolution'),
-              h('div', { className: 'pe-code', style: { marginTop: 4 } }, data.project.root + '/.dsh/skills'),
-            ),
+              h('div', { className: 'pe-code', style: { marginTop: 7 } }, storageRoot + '/.dsh/project-evolution'),
+              h('div', { className: 'pe-code', style: { marginTop: 4 } }, storageRoot + '/.dsh/skills'),
+            ) : null,
             form.autoAccept ? h('div', { className: 'pe-alert pe-alert-warn' }, t('settings.autoAcceptOnWarning')) : null,
             h('div', { className: 'pe-actions' }, h(Button, { variant: 'primary', onClick: save, disabled: Boolean(busy) }, busy || t('common.save'))),
           ),
@@ -1160,6 +1216,8 @@ State the concrete trigger, project area, and preconditions.
       const [selectedProposal, setSelectedProposal] = React.useState('')
       const [generatedAt, setGeneratedAt] = React.useState(0)
       const loadedRef = React.useRef(false)
+      const requestRef = React.useRef(0)
+      const knowledgeRequestRef = React.useRef(0)
 
       const notify = React.useCallback((message, kind = 'error') => {
         setNotice({ message, kind })
@@ -1170,11 +1228,13 @@ State the concrete trigger, project area, and preconditions.
 
       const loadKnowledge = React.useCallback(async (query = '') => {
         if (!sessionId) return
+        const requestId = ++knowledgeRequestRef.current
         try {
           const result = await apiGet('/knowledge', { sessionId, query })
+          if (requestId !== knowledgeRequestRef.current) return
           setKnowledge(result.knowledge || [])
         } catch (loadError) {
-          notify(loadError.message, 'error')
+          if (requestId === knowledgeRequestRef.current) notify(loadError.message, 'error')
         }
       }, [sessionId, notify])
 
@@ -1183,8 +1243,10 @@ State the concrete trigger, project area, and preconditions.
         // actions must not unmount tabs, or an unsaved draft would disappear.
         if (!loadedRef.current) setLoading(true)
         setError('')
+        const requestId = ++requestRef.current
         try {
           if (!sessionId) {
+            if (requestId !== requestRef.current) return
             setData(null)
             setKnowledge([])
             setLoading(false)
@@ -1194,18 +1256,21 @@ State the concrete trigger, project area, and preconditions.
             apiGet('/overview', { sessionId }),
             apiGet('/knowledge', { sessionId }),
           ])
+          if (requestId !== requestRef.current) return
           setData(overview)
           setKnowledge(knowledgeResult.knowledge || [])
           setGeneratedAt(Date.now())
           loadedRef.current = true
         } catch (loadError) {
-          setError(t('error.load', { message: loadError.message }))
+          if (requestId === requestRef.current) setError(t('error.load', { message: loadError.message }))
         } finally {
-          setLoading(false)
+          if (requestId === requestRef.current) setLoading(false)
         }
       }, [sessionId, t])
 
       React.useEffect(() => {
+        requestRef.current += 1
+        knowledgeRequestRef.current += 1
         loadedRef.current = false
         setData(null)
         setLoading(true)
@@ -1251,7 +1316,6 @@ State the concrete trigger, project area, and preconditions.
         ['skills', 'tabs.skills'],
         ['evolution', 'tabs.evolution'],
         ['knowledge', 'tabs.knowledge'],
-        ['settings', 'tabs.settings'],
       ]
 
       return h('div', { className: 'pe-root' },
@@ -1283,14 +1347,186 @@ State the concrete trigger, project area, and preconditions.
               tab === 'skills' ? h(SkillsTab, { data, t, locale, sessionId, busy: Boolean(busy), onAction, onSelectProposal: (id) => { setSelectedProposal(id); setTab('evolution') }, notify }) : null,
               tab === 'evolution' ? h(EvolutionTab, { data, t, locale, sessionId, busy: Boolean(busy), onAction, selectedId: selectedProposal, setSelectedId: setSelectedProposal, notify }) : null,
               tab === 'knowledge' ? h(KnowledgeTab, { t, locale, sessionId, busy: Boolean(busy), onAction, notify, knowledge, reloadKnowledge: () => loadKnowledge() }) : null,
-              tab === 'settings' ? h(SettingsTab, { data, t, busy: Boolean(busy), onAction, notify }) : null,
             ),
       )
     }
 
-    function ProjectEvolutionSection(props) {
+    function ProjectEvolutionSettingsPage(props) {
+      const ctx = props.pluginContext
+      const revision = useLocaleRevision(ctx)
+      const t = React.useMemo(() => bindT(ctx), [ctx, revision])
+      const locale = ctx.locale.getSnapshot().active
+      const [projects, setProjects] = React.useState([])
+      const [config, setConfig] = React.useState(null)
+      const [selectedKey, setSelectedKey] = React.useState('')
+      const [detail, setDetail] = React.useState(null)
+      const [reloadToken, setReloadToken] = React.useState(0)
+      const [loading, setLoading] = React.useState(true)
+      const [detailLoading, setDetailLoading] = React.useState(false)
+      const [busy, setBusy] = React.useState('')
+      const [error, setError] = React.useState('')
+      const [notice, setNotice] = React.useState(null)
+
+      const notify = React.useCallback((message, kind = 'error') => {
+        setNotice({ message, kind })
+        if (kind === 'ok') {
+          window.setTimeout(() => setNotice((current) => (current?.message === message ? null : current)), 3500)
+        }
+      }, [])
+
+      const loadProjects = React.useCallback(async () => {
+        setLoading(true)
+        setError('')
+        try {
+          const result = await apiGet('/projects')
+          const rows = Array.isArray(result.projects) ? result.projects : []
+          setProjects(rows)
+          setConfig(result.config || null)
+          setSelectedKey((current) => (rows.some((row) => row.key === current) ? current : (rows[0]?.key || '')))
+          setReloadToken((value) => value + 1)
+        } catch (loadError) {
+          setError(t('error.load', { message: loadError.message }))
+        } finally {
+          setLoading(false)
+        }
+      }, [t])
+
+      React.useEffect(() => { loadProjects() }, [loadProjects])
+
+      const selected = projects.find((row) => row.key === selectedKey)
+      const sessionId = selected?.sessionId || ''
+
+      React.useEffect(() => {
+        let alive = true
+        if (!sessionId) {
+          setDetail(null)
+          setDetailLoading(false)
+          return () => { alive = false }
+        }
+        setDetail(null)
+        setDetailLoading(true)
+        apiGet('/overview', { sessionId })
+          .then((result) => { if (alive) setDetail(result) })
+          .catch((loadError) => { if (alive) notify(t('error.load', { message: loadError.message }), 'error') })
+          .finally(() => { if (alive) setDetailLoading(false) })
+        return () => { alive = false }
+      }, [sessionId, reloadToken, t, notify])
+
+      async function onAction(payload, busyLabel) {
+        setBusy(String(busyLabel || t('common.saving')))
+        setNotice(null)
+        try {
+          const result = await apiPost(payload)
+          if (result?.result?.config) setConfig(result.result.config)
+          return result?.result
+        } catch (actionError) {
+          notify(t('error.action', { message: actionError.message }), 'error')
+          return null
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const counts = detail?.status?.counts || {}
+      const skills = detail?.catalog?.project || []
+      const selectedTitle = selected ? (selected.title || selected.name || t('settings.untitledProject')) : ''
+
+      return h('div', { className: 'pe-root pe-global-settings' },
+        h('div', { className: 'pe-head' },
+          h('div', null,
+            h('h2', { className: 'pe-title' }, t('settings.projectsTitle')),
+            h('p', { className: 'pe-sub' }, t('settings.projectsSubtitle')),
+          ),
+          h('div', { className: 'pe-head-actions' },
+            h(Button, { onClick: loadProjects, disabled: loading || Boolean(busy) }, t('settings.refreshProjects')),
+          ),
+        ),
+        error ? h('div', { className: 'pe-alert pe-alert-error' }, error) : null,
+        notice ? h('div', { className: `pe-alert ${notice.kind === 'ok' ? 'pe-alert-ok' : notice.kind === 'warn' ? 'pe-alert-warn' : 'pe-alert-error'}` },
+          h('div', { className: 'pe-inline' }, h('span', null, notice.message), h('span', { className: 'pe-right' }, h(Button, { variant: 'ghost', onClick: () => setNotice(null) }, t('common.dismiss')))),
+        ) : null,
+        loading ? h('div', { className: 'pe-loading' }, h('div', { className: 'pe-spinner' }), t('common.loading'))
+          : h(React.Fragment, null,
+            h('div', { className: 'pe-card' },
+              h('div', { className: 'pe-section-head' },
+                h('h3', null, t('settings.projectPicker')),
+                h('span', { className: 'pe-badge' }, t('settings.projectsCount', { n: projects.length })),
+              ),
+              projects.length === 0 ? h('div', { className: 'pe-empty' }, t('settings.noProjects'))
+                : h(React.Fragment, null,
+                  h(Field, { label: t('common.project') },
+                    h('select', {
+                      className: 'pe-select',
+                      value: selectedKey,
+                      onChange: (event) => { setSelectedKey(event.target.value); setDetail(null) },
+                    }, projects.map((project) => h('option', { key: project.key, value: project.key }, `${project.title || project.name} — ${project.root}`))),
+                  ),
+                  selected ? h('dl', { className: 'pe-kv', style: { marginTop: 12 } },
+                    h('dt', null, t('common.project')),
+                    h('dd', null, selectedTitle),
+                    h('dt', null, t('overview.root')),
+                    h('dd', null, h('span', { className: 'pe-code' }, selected.root)),
+                    h('dt', null, t('settings.projectLastActive')),
+                    h('dd', null, formatDate(selected.lastActiveAt, locale)),
+                    h('dt', null, t('settings.folders')),
+                    h('dd', null, String(selected.workspaceCount ?? 0)),
+                    h('dt', null, t('settings.chats')),
+                    h('dd', null, String(selected.sessionCount ?? 0)),
+                  ) : null,
+                  selected ? h('div', { style: { marginTop: 12 } },
+                    h('div', { className: 'pe-small pe-muted' }, t('settings.projectStorageTitle')),
+                    h('div', { className: 'pe-code', style: { marginTop: 5 } }, selected.root + '/.dsh/project-evolution'),
+                    h('div', { className: 'pe-code', style: { marginTop: 4 } }, selected.root + '/.dsh/skills'),
+                  ) : null,
+                ),
+            ),
+            selected && !sessionId ? h('div', { className: 'pe-alert pe-alert-warn' }, t('settings.noProjectSession')) : null,
+            detailLoading ? h('div', { className: 'pe-loading' }, h('div', { className: 'pe-spinner' }), t('common.loading')) : null,
+            detail ? h('div', { className: 'pe-stack' },
+              h('div', { className: 'pe-grid pe-grid-4' },
+                h('div', { className: 'pe-card' }, h('div', { className: 'pe-stat-value' }, String(skills.length)), h('div', { className: 'pe-stat-label' }, t('settings.projectSkills'))),
+                h('div', { className: 'pe-card' }, h('div', { className: 'pe-stat-value' }, String(counts.knowledge ?? 0)), h('div', { className: 'pe-stat-label' }, t('settings.projectKnowledge'))),
+                h('div', { className: 'pe-card' }, h('div', { className: 'pe-stat-value' }, String(counts.pendingProposals ?? 0)), h('div', { className: 'pe-stat-label' }, t('settings.projectPending'))),
+                h('div', { className: 'pe-card' }, h('div', { className: 'pe-stat-value' }, String(selected?.sessionCount ?? 0)), h('div', { className: 'pe-stat-label' }, t('settings.chats'))),
+              ),
+              h('div', { className: 'pe-grid pe-grid-2' },
+                h('div', { className: 'pe-card' },
+                  h('div', { className: 'pe-section-head' },
+                    h('h3', null, t('settings.projectSkillsTitle')),
+                    h('span', { className: 'pe-badge' }, String(skills.length)),
+                  ),
+                  skills.length === 0 ? h('div', { className: 'pe-empty' }, t('settings.projectNoSkills'))
+                    : h('div', { className: 'pe-list pe-scroll' }, skills.map((skill) => h('div', { key: skill.name, className: 'pe-row', style: { cursor: 'default' } },
+                      h('div', { className: 'pe-row-main' },
+                        h('div', { className: 'pe-row-title' }, skill.name),
+                        h('div', { className: 'pe-row-sub' }, skill.description || skill.relativePath || ''),
+                      ),
+                      h('div', { className: 'pe-inline' },
+                        badge(skill.enabled ? t('common.enabled') : t('common.disabled'), skill.enabled ? 'ok' : 'warn'),
+                        Number(skill.evidenceScore) ? badge(`${t('common.evidence')} ${skill.evidenceScore}`) : null,
+                      ),
+                    ))),
+                ),
+                h('div', { className: 'pe-card' },
+                  h('h3', { className: 'pe-card-title' }, t('settings.projectNextTitle')),
+                  h('div', { className: 'pe-small pe-muted', style: { marginTop: 7 } }, t('settings.projectOpenHint')),
+                ),
+              ),
+            ) : null,
+            config ? h(AutomationSettings, { config, t, busy, onAction, notify, storageRoot: '', globalScope: true })
+              : h('div', { className: 'pe-empty' }, error || t('common.loading')),
+          ),
+      )
+    }
+
+    function ProjectEvolutionView(props) {
       const ctx = props.pluginContext
       return h(ProjectEvolution, { ...props, pluginContext: ctx })
+    }
+
+    function ProjectEvolutionSettings(props) {
+      const ctx = props.pluginContext
+      return h(ProjectEvolutionSettingsPage, { ...props, pluginContext: ctx })
     }
 
     return {
@@ -1298,15 +1534,23 @@ State the concrete trigger, project area, and preconditions.
       inject: ['slots', 'locale'],
       apply(ctx) {
         ctx.effect(() => ctx.locale.register(NS, { en, ru }), 'project-evolution: dictionaries')
-        const t = bindT(ctx)
+        ctx.slots.inject('conversation.view', () => ctx.slots.register({
+          name: 'conversation.view',
+          id: 'project-evolution',
+          order: 40,
+          // The shell caps a tab label at 88px. The full product name stays in
+          // the view heading and the Settings label; this keeps the fifth tab
+          // readable instead of ellipsizing to "Project Evolu…".
+          label: () => ctx.locale.bind(NS)('nav.conversation'),
+          locale: NS,
+        }, (props) => h(ProjectEvolutionView, { ...props, pluginContext: ctx })))
         ctx.slots.inject('settings.section', () => ctx.slots.register({
           name: 'settings.section',
           id: 'project-evolution',
           order: 35,
           label: () => ctx.locale.bind(NS)('nav'),
           locale: NS,
-        }, (props) => h(ProjectEvolutionSection, { ...props, pluginContext: ctx })))
-        void t
+        }, (props) => h(ProjectEvolutionSettings, { ...props, pluginContext: ctx })))
       },
     }
   },

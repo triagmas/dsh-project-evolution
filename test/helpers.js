@@ -51,6 +51,7 @@ export function fakeSession({ id, cwd, events, title }) {
 export function fakeCtx(sessions = []) {
   const byId = new Map(sessions.map((session) => [session.id, session]))
   return {
+    get(name) { return this[name] },
     skills: { list: async () => [], get: async () => undefined },
     sessions: {
       get: (id) => byId.get(id),

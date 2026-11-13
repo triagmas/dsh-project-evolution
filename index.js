@@ -2,7 +2,9 @@
  * Host half of dsh-project-evolution.
  *
  * Surfaces:
- *  - one authenticated HTTP API for the settings page;
+ *  - one authenticated HTTP API for the conversation view and settings page;
+ *    project inspection uses live sessions plus persisted headers when the
+ *    mounted `sessionQuery` service is available;
  *  - model tools for read/recall/record/propose (never apply);
  *  - a short prompt section establishing discovery and evidence discipline;
  *  - an `agent/turn-stopping` observer that writes bounded evidence and
